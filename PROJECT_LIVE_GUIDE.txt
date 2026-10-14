@@ -1,0 +1,135 @@
+================================================================================
+                    CYBRICAL TECH - PROJECT LIVE & DEPLOYMENT GUIDE
+================================================================================
+
+Yeh document aapko Cybrical Tech LMS, Admin Portal aur AI Assistant ko live 
+internet par deploy karne, manage karne aur local run karne ke poore steps batata hai.
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW & LIVE URLS
+--------------------------------------------------------------------------------
+- GitHub Repository : https://github.com/panditvishalpathak/Cybrical-Tech
+- Live Website URL  : https://cybrical-tech.onrender.com
+- Backend API Health: https://cybrical-tech.onrender.com/api/health
+- Admin Login Page  : https://cybrical-tech.onrender.com/admin/login
+- Database          : MongoDB Atlas Cloud (Live Cluster)
+- AI Assistant Engine: Perplexity Online Search + OpenAI Natural Reasoning
+
+--------------------------------------------------------------------------------
+2. LIVE HOSTING STEPS (RENDER PAR SINGLE URL DEPLOYMENT)
+--------------------------------------------------------------------------------
+Aapka project aise configure kiya gaya hai ki poora FRONTEND (React) aur 
+BACKEND (Node/Express API) dono ek hi single link par chalte hain:
+👉 https://cybrical-tech.onrender.com
+
+Agar kabhi naye sire se Render par setup karna ho toh ye steps hain:
+
+STEP 1: Render Account
+- https://render.com par jayein aur apne GitHub account se Sign In karein.
+
+STEP 2: New Web Service Banayein
+- Render Dashboard me upar "New +" button par click karein.
+- "Web Service" option choose karein.
+- Apna GitHub repository "Cybrical-Tech" select karein.
+
+STEP 3: Basic Settings Fill Karein
+- Name             : cybrical-tech
+- Region           : Singapore (ya koi bhi nearest)
+- Root Directory   : backend      <--- (Zaroori: isme backend likhein)
+- Environment      : Node
+- Build Command    : npm install
+- Start Command    : npm start
+- Instance Type    : Free
+
+STEP 4: Environment Variables (Secrets) Add Karein
+Render dashboard me "Environment Variables" section me jaakar ye 4 keys daalein:
+
+1. PORT
+   Value: 5000
+
+2. MONGO_URI
+   Value: mongodb+srv://cybricaladmin:CybricalTest2026@cluster0.uoawsnd.mongodb.net/cybricaltech?retryWrites=true&w=majority
+
+3. JWT_SECRET
+   Value: cybrical_super_secret_key_2026
+
+4. OPENAI_API_KEY
+   Value: (Aapki OpenAI ya Perplexity API key)
+
+STEP 5: Deploy
+- Niche "Create Web Service" button dabayein.
+- 2-3 minute me status "Live" ho jayega!
+
+--------------------------------------------------------------------------------
+3. LOCAL MACHINE PAR PROJECT KAISE RUN KAREIN (DEVELOPMENT)
+--------------------------------------------------------------------------------
+
+A. Backend Run Karna (Terminal 1):
+   cd /Users/macbook/Desktop/cybrical-tech/backend
+   npm run dev
+   👉 Runs on: http://localhost:5000
+
+B. Frontend Run Karna (Terminal 2):
+   cd /Users/macbook/Desktop/cybrical-tech/frontend
+   npm run dev
+   👉 Runs on: http://localhost:5173
+
+C. Mobile Phone / LAN par test karna:
+   cd /Users/macbook/Desktop/cybrical-tech/frontend
+   npm run dev -- --host
+
+--------------------------------------------------------------------------------
+4. NAYA CODE CHANGE KARKE LIVE UPLOAD KAISE KAREIN
+--------------------------------------------------------------------------------
+Jab bhi aap website me koi naya feature ya design change karein:
+
+STEP 1: Frontend ka naya build banayein
+   cd /Users/macbook/Desktop/cybrical-tech/frontend
+   npm run build
+
+STEP 2: Built files ko backend/public me copy karein
+   cd /Users/macbook/Desktop/cybrical-tech
+   rm -rf backend/public
+   cp -r frontend/dist backend/public
+
+STEP 3: GitHub par push karein
+   git add .
+   git commit -m "aapka update message"
+   git push origin main
+
+👉 Jaise hi aap push karenge, Render apne aap naya code pull karke 2 minute me
+   website ko live update kar dega!
+
+--------------------------------------------------------------------------------
+5. ALTERNATIVE: FRONTEND ON VERCEL + BACKEND ON RENDER
+--------------------------------------------------------------------------------
+Agar aap chahein ki Frontend Vercel par alag chale aur Backend Render par:
+
+1. Vercel (https://vercel.com) par jayein aur GitHub repo "Cybrical-Tech" import karein.
+2. Root Directory me "frontend" choose karein.
+3. Settings -> Environment Variables me:
+   Key  : VITE_API_URL
+   Value: https://cybrical-tech.onrender.com
+4. Deploy par click karein.
+   Vercel aapko ek alag link dega jaise: https://cybrical-tech.vercel.app
+
+--------------------------------------------------------------------------------
+6. IMPORTANT TROUBLESHOOTING TIPS
+--------------------------------------------------------------------------------
+1. Free Render Cold Start:
+   Render ka free tier 15 minute tak koi user na aane par "sleep" mode me chala
+   jata hai. Isliye jab aap bohot der baad pehli baar link open karte hain, toh
+   pehla page load hone me 30-50 seconds lag sakte hain. Uske baad normal fast chalega.
+
+2. MongoDB Atlas IP Whitelist:
+   MongoDB Atlas Dashboard (cloud.mongodb.com) me "Network Access" me IP Address
+   hamesha "0.0.0.0/0" (Allow access from anywhere) hona chahiye taaki Render cloud
+   se database connect ho sake.
+
+3. Admin Access:
+   - Admin Login URL: https://cybrical-tech.onrender.com/admin/login
+   - Admin panel se courses create, update, delete aur ZIP files upload ki ja sakti hain.
+
+================================================================================
+                    CYBRICAL TECH - READY & LIVE 🚀
+================================================================================
