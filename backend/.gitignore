@@ -8,3 +8,4 @@ uploads/courses/*.tar
 uploads/courses/*.7z
 .DS_Store
 *.log
+
