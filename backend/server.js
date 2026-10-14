@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const path = require("path");
+const fs = require("fs");
 
 dotenv.config();
 
@@ -60,15 +61,17 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/courses", courseRoutes);
 
 /* =========================
-   HEALTH CHECK & STATUS
+   SERVE FRONTEND STATIC FILES
 ========================= */
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Cybrical Tech API is running 🚀",
-  });
-});
+const publicPath = path.join(__dirname, "public");
+if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+}
+
+/* =========================
+   HEALTH CHECK & STATUS
+========================= */
 
 app.get("/api/health", (req, res) => {
   const dbStates = ["Disconnected ❌", "Connected ✅", "Connecting ⏳", "Disconnecting ⚠️"];
@@ -80,6 +83,24 @@ app.get("/api/health", (req, res) => {
     database: dbStates[dbState] || "Unknown",
     dbReady: dbState === 1,
     message: dbState === 1 ? "Backend & Database connected successfully ✅" : "Database is not connected. Check MongoDB Atlas / Local MongoDB.",
+  });
+});
+
+/* =========================
+   SPA FALLBACK ROUTE
+========================= */
+
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+    return next();
+  }
+  const indexPath = path.join(publicPath, "index.html");
+  if (fs.existsSync(indexPath)) {
+    return res.sendFile(indexPath);
+  }
+  res.json({
+    success: true,
+    message: "Cybrical Tech API is running 🚀",
   });
 });
 

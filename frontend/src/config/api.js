@@ -2,15 +2,18 @@ const getBaseUrl = () => {
   if (import.meta.env && import.meta.env.VITE_API_URL) {
     return import.meta.env.VITE_API_URL.replace(/\/+$/, "");
   }
-  if (typeof window !== "undefined" && window.location && window.location.hostname) {
+  if (typeof window !== "undefined" && window.location) {
     const host = window.location.hostname;
-    if (host === "localhost" || host === "127.0.0.1") {
+    // When developing on Vite dev server (port 5173 or other dev ports)
+    if ((host === "localhost" || host === "127.0.0.1") && window.location.port !== "5000") {
       return "http://localhost:5000";
     }
-    // Local LAN network testing (e.g. 192.168.x.x, 10.x.x.x)
-    if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host)) {
+    // Local LAN dev server (e.g. mobile testing on port 5173)
+    if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host) && window.location.port !== "5000") {
       return `http://${host}:5000`;
     }
+    // In production or when frontend is served directly by backend
+    return window.location.origin || "https://cybrical-tech.onrender.com";
   }
   return "https://cybrical-tech.onrender.com";
 };
