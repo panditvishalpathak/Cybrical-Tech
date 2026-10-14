@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 
-const API_URL = "http://localhost:5000/api/blog";
+const API_URL = getApiUrl("/api/blog");
 
 function AdminBlogs() {
   const [blogs, setBlogs] = useState([]);

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { getApiUrl } from "../config/api";
 
 function AdminDashboard() {
   const navigate = useNavigate();
@@ -221,7 +222,7 @@ function AdminDashboard() {
             <button
               onClick={() =>
                 window.open(
-                  "http://localhost:5000/api/health",
+                  getApiUrl("/api/health"),
                   "_blank"
                 )
               }

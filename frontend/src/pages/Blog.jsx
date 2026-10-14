@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { getApiUrl } from "../config/api";
 import "./Blog.css";
 
 function Blog() {
@@ -37,7 +38,7 @@ function Blog() {
         setError("");
 
         const response = await axios.get(
-          "http://localhost:5000/api/blog"
+          getApiUrl("/api/blog")
         );
 
         setPosts(response.data.data || []);
