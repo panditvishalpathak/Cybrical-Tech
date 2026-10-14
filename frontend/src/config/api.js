@@ -12,7 +12,7 @@ const getBaseUrl = () => {
       return `http://${host}:5000`;
     }
   }
-  return "http://localhost:5000";
+  return "https://cybrical-tech.onrender.com";
 };
 
 export const getApiUrl = (endpoint = "") => {
