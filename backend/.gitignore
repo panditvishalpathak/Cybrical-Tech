@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+!.env.example
+uploads/courses/*.zip
+uploads/courses/*.rar
+uploads/courses/*.tar
+uploads/courses/*.7z
+.DS_Store
+*.log

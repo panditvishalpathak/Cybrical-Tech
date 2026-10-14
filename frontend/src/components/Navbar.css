@@ -1,0 +1,710 @@
+/* =========================================
+   CYBRICAL TECH - NAVBAR
+========================================= */
+
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+
+    width: 100%;
+    height: 78px;
+
+    background: rgba(3, 12, 9, 0.82);
+
+    border-bottom: 1px solid rgba(74, 222, 128, 0.12);
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    transition: all 0.3s ease;
+}
+
+/* Top green light */
+.navbar::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 10%;
+
+    width: 80%;
+    height: 1px;
+
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(34, 197, 94, 0.2),
+            #22c55e,
+            #10b981,
+            rgba(34, 197, 94, 0.2),
+            transparent);
+
+    pointer-events: none;
+}
+
+/* =========================================
+   SCROLLED NAVBAR
+========================================= */
+
+.navbar-scrolled {
+    background: rgba(2, 8, 6, 0.96);
+
+    border-bottom-color: rgba(34, 197, 94, 0.2);
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.4),
+        0 0 40px rgba(34, 197, 94, 0.04);
+}
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.navbar-container {
+    width: min(1320px, 92%);
+    height: 100%;
+
+    margin: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+}
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    flex-shrink: 0;
+
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* =========================================
+   COMPLETE CYBRICAL LOGO
+========================================= */
+
+.brand-mark {
+    position: relative;
+
+    width: 155px;
+    height: 52px;
+
+    flex-shrink: 0;
+
+    background: #ffffff;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    box-shadow:
+        0 0 0 1px rgba(74, 222, 128, 0.25),
+        0 8px 25px rgba(34, 197, 94, 0.18);
+
+    transition: all 0.3s ease;
+}
+
+/*
+  Original Cybrical image me white space hai.
+  Isliye image ko zoom + position kiya gaya hai.
+*/
+.brand-mark img {
+    position: absolute;
+
+    width: 213px;
+    height: 213px;
+
+    max-width: none;
+
+    left: -29px;
+    top: -87px;
+
+    display: block;
+}
+
+/* Logo hover */
+.brand:hover .brand-mark {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 0 0 1px rgba(74, 222, 128, 0.4),
+        0 10px 30px rgba(34, 197, 94, 0.28);
+}
+
+/* =========================================
+   BRAND TEXT
+========================================= */
+
+.brand-name {
+    display: flex;
+    flex-direction: column;
+
+    line-height: 1;
+}
+
+.brand-name strong {
+    color: #f0fdf4;
+
+    font-size: 19px;
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+.brand-name span {
+    margin-top: 5px;
+
+    color: #22c55e;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 5px;
+}
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.navbar-menu {
+    display: flex;
+    align-items: center;
+
+    gap: 25px;
+
+    margin-left: auto;
+}
+
+.navbar-menu a {
+    position: relative;
+
+    color: #8b9a91;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    padding: 10px 0;
+
+    transition: all 0.25s ease;
+}
+
+.navbar-menu a:hover {
+    color: #f0fdf4;
+
+    transform: translateY(-1px);
+}
+
+/* Active underline */
+.navbar-menu a::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    bottom: -3px;
+
+    width: 0;
+    height: 2px;
+
+    transform: translateX(-50%);
+
+    border-radius: 999px;
+
+    background: linear-gradient(90deg,
+            #22c55e,
+            #10b981);
+
+    box-shadow:
+        0 0 10px rgba(34, 197, 94, 0.65);
+
+    transition: width 0.25s ease;
+}
+
+.navbar-menu a:hover::after,
+.navbar-menu a.active::after {
+    width: 20px;
+}
+
+.navbar-menu a.active {
+    color: #ffffff;
+}
+
+/* =========================================
+   RIGHT SIDE
+========================================= */
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+/* =========================================
+   SEARCH
+========================================= */
+
+.navbar-search {
+    width: 36px;
+    height: 36px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+
+    background: transparent;
+
+    color: #9fb0a7;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.navbar-search:hover {
+    color: #4ade80;
+
+    transform: scale(1.1);
+}
+
+/* =========================================
+   USER
+========================================= */
+
+.navbar-user,
+.logged-user {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 0 12px;
+
+    border: 1px solid rgba(74, 222, 128, 0.2);
+
+    border-radius: 999px;
+
+    background: rgba(34, 197, 94, 0.05);
+
+    color: #dcfce7;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+
+    transition: all 0.25s ease;
+}
+
+.navbar-user:hover {
+    border-color: rgba(74, 222, 128, 0.55);
+
+    background: rgba(34, 197, 94, 0.1);
+
+    color: #ffffff;
+}
+
+/* User icon */
+.user-icon {
+    width: 22px;
+    height: 22px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(34, 197, 94, 0.1);
+
+    color: #4ade80;
+}
+
+.user-arrow {
+    color: #6f8178;
+
+    font-size: 11px;
+}
+
+/* Logged user */
+.logged-user {
+    padding-right: 7px;
+}
+
+/* Logout */
+.logout-btn {
+    margin-left: 3px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #fca5a5;
+
+    font-size: 11px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.25s ease;
+}
+
+.logout-btn:hover {
+    color: #fecaca;
+}
+
+/* =========================================
+   LET'S TALK
+========================================= */
+
+.navbar-cta {
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 9px;
+
+    padding: 0 17px;
+
+    border: 1px solid rgba(74, 222, 128, 0.25);
+
+    border-radius: 999px;
+
+    background: linear-gradient(135deg,
+            rgba(34, 197, 94, 0.1),
+            rgba(16, 185, 129, 0.05));
+
+    color: #ecfdf5;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+
+    transition: all 0.3s ease;
+}
+
+.navbar-cta span {
+    font-size: 16px;
+
+    transition: transform 0.3s ease;
+}
+
+.navbar-cta:hover {
+    background: linear-gradient(135deg,
+            #22c55e,
+            #10b981);
+
+    border-color: #22c55e;
+
+    color: #02130a;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 30px rgba(34, 197, 94, 0.25);
+}
+
+.navbar-cta:hover span {
+    transform: translate(2px, -2px);
+}
+
+/* =========================================
+   MOBILE TOGGLE
+========================================= */
+
+.mobile-toggle {
+    display: none;
+
+    width: 42px;
+    height: 42px;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    border: 1px solid rgba(74, 222, 128, 0.2);
+
+    border-radius: 11px;
+
+    background: rgba(34, 197, 94, 0.05);
+
+    cursor: pointer;
+}
+
+.mobile-toggle span {
+    width: 19px;
+    height: 2px;
+
+    border-radius: 999px;
+
+    background: #dcfce7;
+
+    transition: all 0.3s ease;
+}
+
+.mobile-toggle:hover {
+    border-color: rgba(74, 222, 128, 0.55);
+
+    background: rgba(34, 197, 94, 0.1);
+}
+
+/* Hamburger animation */
+.mobile-toggle.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.mobile-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-toggle.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1150px) {
+
+    .navbar-container {
+        width: calc(100% - 30px);
+    }
+
+    .navbar-menu {
+        gap: 16px;
+    }
+
+    .navbar-menu a {
+        font-size: 11px;
+    }
+
+    .navbar-user,
+    .logged-user {
+        display: none;
+    }
+
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 900px) {
+
+    .navbar {
+        height: 70px;
+    }
+
+    .navbar-container {
+        width: calc(100% - 30px);
+    }
+
+    /* Mobile logo */
+    .brand-mark {
+        width: 125px;
+        height: 44px;
+    }
+
+    .brand-mark img {
+        width: 181px;
+        height: 181px;
+
+        left: -25px;
+        top: -74px;
+    }
+
+    .brand-name strong {
+        font-size: 16px;
+    }
+
+    .brand-name span {
+        font-size: 10px;
+        letter-spacing: 4px;
+    }
+
+    /* Mobile menu */
+    .navbar-menu {
+        position: absolute;
+
+        top: 70px;
+        left: 15px;
+        right: 15px;
+
+        display: none;
+
+        flex-direction: column;
+        align-items: stretch;
+
+        gap: 3px;
+
+        margin: 0;
+
+        padding: 12px;
+
+        border: 1px solid rgba(74, 222, 128, 0.15);
+
+        border-radius: 18px;
+
+        background: rgba(3, 12, 8, 0.98);
+
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+
+        box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    .navbar-menu.open {
+        display: flex;
+    }
+
+    .navbar-menu a {
+        width: 100%;
+
+        box-sizing: border-box;
+
+        padding: 14px 15px;
+
+        border-radius: 10px;
+
+        font-size: 13px;
+    }
+
+    .navbar-menu a:hover {
+        background: rgba(34, 197, 94, 0.08);
+
+        transform: none;
+    }
+
+    .navbar-menu a.active {
+        background: rgba(34, 197, 94, 0.1);
+
+        color: #4ade80;
+    }
+
+    .navbar-menu a::after {
+        display: none;
+    }
+
+    /* Right side */
+    .navbar-right {
+        margin-left: auto;
+    }
+
+    .navbar-search,
+    .navbar-right .navbar-user,
+    .navbar-right .logged-user {
+        display: none;
+    }
+
+    .navbar-cta {
+        display: none;
+    }
+
+    /* Hamburger */
+    .mobile-toggle {
+        display: flex;
+
+        margin-left: 5px;
+    }
+
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+
+    .navbar-container {
+        width: calc(100% - 22px);
+    }
+
+    .brand {
+        gap: 8px;
+    }
+
+    .brand-mark {
+        width: 115px;
+        height: 42px;
+
+        border-radius: 9px;
+    }
+
+    .brand-mark img {
+        width: 172px;
+        height: 172px;
+
+        left: -24px;
+        top: -70px;
+    }
+
+    .brand-name strong {
+        font-size: 12px;
+    }
+
+    .brand-name span {
+        font-size: 6px;
+
+        letter-spacing: 3px;
+    }
+
+    .navbar-menu {
+        top: 70px;
+
+        left: 11px;
+        right: 11px;
+    }
+
+    .mobile-toggle {
+        width: 40px;
+        height: 40px;
+    }
+
+}
+
+/* =========================================
+   VERY SMALL SCREEN
+========================================= */
+
+@media (max-width: 360px) {
+
+    .brand-name {
+        display: none;
+    }
+
+    .brand-mark {
+        width: 115px;
+        height: 42px;
+    }
+
+}
