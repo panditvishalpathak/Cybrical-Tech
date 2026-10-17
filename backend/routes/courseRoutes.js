@@ -264,9 +264,6 @@ const WEB_DEV_ZIP_COURSE = {
             "Database modeling, CRUD operations, password hashing with bcrypt, and JWT user authentication.",
           duration: "60 min",
           videoUrl: "",
-          zipUrl: "/uploads/courses/1791199715268-701008463.zip",
-          zipName: "11-MongoDB-JWT-Auth-System.zip",
-          zipSize: "197 MB",
         },
         {
           _id: "web-les-12",
@@ -275,92 +272,11 @@ const WEB_DEV_ZIP_COURSE = {
             "Connecting frontend and backend, environment variables, building for production, and live cloud deployment.",
           duration: "60 min",
           videoUrl: "",
-          zipUrl: "/uploads/courses/1791199726034-613446791.zip",
-          zipName: "12-FullStack-Production-Complete.zip",
-          zipSize: "333 MB",
         },
       ],
     },
   ],
-  zipFiles: [
-    {
-      _id: "zf-1",
-      title: "01: HTML5 Starter Kit ZIP",
-      fileName: "01-HTML5-Starter-Project.zip",
-      url: "/uploads/courses/1791194734125-528801946.zip",
-      fileSize: "185 MB",
-    },
-    {
-      _id: "zf-2",
-      title: "02: CSS3 Flexbox & Grid ZIP",
-      fileName: "02-CSS3-Flexbox-Grid-Layouts.zip",
-      url: "/uploads/courses/1791194748044-253890491.zip",
-      fileSize: "507 MB",
-    },
-    {
-      _id: "zf-3",
-      title: "03: Responsive Landing Page ZIP",
-      fileName: "03-Responsive-Landing-Page.zip",
-      url: "/uploads/courses/1791194763164-769067527.zip",
-      fileSize: "185 MB",
-    },
-    {
-      _id: "zf-4",
-      title: "04: JS DOM Interactive Project ZIP",
-      fileName: "04-JS-DOM-Interactive-Project.zip",
-      url: "/uploads/courses/1791194776246-178006013.zip",
-      fileSize: "351 MB",
-    },
-    {
-      _id: "zf-5",
-      title: "05: Async API Weather App ZIP",
-      fileName: "05-Async-API-Weather-App.zip",
-      url: "/uploads/courses/1791195035501-472161838.zip",
-      fileSize: "436 MB",
-    },
-    {
-      _id: "zf-6",
-      title: "06: Interactive CRUD App ZIP",
-      fileName: "06-Interactive-CRUD-Storage-App.zip",
-      url: "/uploads/courses/1791196105477-687599394.zip",
-      fileSize: "707 MB",
-    },
-    {
-      _id: "zf-7",
-      title: "07: React Components Starter ZIP",
-      fileName: "07-React-Components-Starter.zip",
-      url: "/uploads/courses/1791196912251-509649897.zip",
-      fileSize: "586 MB",
-    },
-    {
-      _id: "zf-8",
-      title: "08: React Hooks & Context Project ZIP",
-      fileName: "08-React-Hooks-Context-Project.zip",
-      url: "/uploads/courses/1791197080020-426950135.zip",
-      fileSize: "356 MB",
-    },
-    {
-      _id: "zf-9",
-      title: "09: Ecommerce Cart Frontend ZIP",
-      fileName: "09-Ecommerce-Cart-Frontend.zip",
-      url: "/uploads/courses/1791198229799-559583431.zip",
-      fileSize: "301 MB",
-    },
-    {
-      _id: "zf-10",
-      title: "10: Node & Express REST API ZIP",
-      fileName: "10-Node-Express-REST-API.zip",
-      url: "/uploads/courses/1791199702700-413691350.zip",
-      fileSize: "253 MB",
-    },
-    {
-      _id: "zf-12",
-      title: "12: FullStack Production Complete ZIP",
-      fileName: "12-FullStack-Production-Complete.zip",
-      url: "/uploads/courses/1791199726034-613446791.zip",
-      fileSize: "333 MB",
-    },
-  ],
+  zipFiles: [],
   resources: [],
 };
 
@@ -771,6 +687,39 @@ const getCourseDoc = async (targetId) => {
       });
     } catch (e) {
       course = null;
+    }
+  }
+
+  if (course) {
+    let modified = false;
+    if (course.zipFiles && course.zipFiles.length > 0) {
+      const filtered = course.zipFiles.filter(
+        (z) => !z.url || (!z.url.startsWith("/uploads/courses/179119") && !z.url.includes("179119"))
+      );
+      if (filtered.length !== course.zipFiles.length) {
+        course.zipFiles = filtered;
+        modified = true;
+      }
+    }
+    if (course.zipFile && course.zipFile.url && (course.zipFile.url.startsWith("/uploads/courses/179119") || course.zipFile.url.includes("179119"))) {
+      course.zipFile = { url: "", fileName: "", fileSize: "" };
+      modified = true;
+    }
+    (course.modules || []).forEach((m) => {
+      (m.lessons || []).forEach((l) => {
+        if (l.zipUrl && (l.zipUrl.startsWith("/uploads/courses/179119") || l.zipUrl.includes("179119"))) {
+          l.zipUrl = "";
+          l.zipName = "";
+          l.zipSize = "";
+          modified = true;
+        }
+      });
+    });
+    if (modified) {
+      course.markModified("zipFiles");
+      course.markModified("zipFile");
+      course.markModified("modules");
+      course.save().catch(() => {});
     }
   }
 
