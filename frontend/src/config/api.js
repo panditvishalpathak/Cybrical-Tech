@@ -18,6 +18,20 @@ const getBaseUrl = () => {
   return "https://cybrical-tech.onrender.com";
 };
 
+export const formatGoogleDriveUrl = (url = "") => {
+  if (!url || typeof url !== "string") return "";
+  const trimmed = url.trim();
+  if (trimmed.includes("drive.google.com") || trimmed.includes("drive.usercontent.google.com")) {
+    const match = trimmed.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                  trimmed.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                  trimmed.match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+  }
+  return trimmed;
+};
+
 export const getApiUrl = (endpoint = "") => {
   const base = getBaseUrl();
   const cleanEndpoint = endpoint ? (endpoint.startsWith("/") ? endpoint : `/${endpoint}`) : "";
@@ -36,8 +50,11 @@ export const getAssetUrl = (path = "") => {
 
 export const getDownloadUrl = (path = "", customName = "") => {
   if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return formatGoogleDriveUrl(path);
+  }
   const nameParam = customName ? `&name=${encodeURIComponent(customName)}` : "";
   return getApiUrl(`/api/courses/download-file?url=${encodeURIComponent(path)}${nameParam}`);
 };
 
-export default { getApiUrl, getAssetUrl, getDownloadUrl };
+export default { getApiUrl, getAssetUrl, getDownloadUrl, formatGoogleDriveUrl };

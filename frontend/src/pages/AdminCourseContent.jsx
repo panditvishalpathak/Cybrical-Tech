@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getApiUrl, getAssetUrl } from "../config/api";
+import { getApiUrl, getAssetUrl, getDownloadUrl, formatGoogleDriveUrl } from "../config/api";
 import "./AdminCourseContent.css";
 
 const AI_FALLBACK_DATA = {
@@ -429,7 +429,10 @@ function AdminCourseContent() {
   const [uploadingLesson, setUploadingLesson] = useState(false);
 
   // Course ZIP Upload State
+  const [zipMode, setZipMode] = useState("drive"); // "drive" | "file"
   const [zipTitle, setZipTitle] = useState("");
+  const [driveUrl, setDriveUrl] = useState("");
+  const [driveFileSize, setDriveFileSize] = useState("");
   const [zipFile, setZipFile] = useState(null);
   const [uploadingZip, setUploadingZip] = useState(false);
 
@@ -655,6 +658,95 @@ function AdminCourseContent() {
       setZipTitle("");
       const zipInput = document.getElementById("course-zip-file-input");
       if (zipInput) zipInput.value = "";
+    } catch (error) {
+      setMessage(`❌ ${error.message}`);
+    } finally {
+      setUploadingZip(false);
+    }
+  };
+
+  // ==========================================
+  // ADD GOOGLE DRIVE / DIRECT LINK ZIP
+  // ==========================================
+  const handleAddDriveZip = async (e) => {
+    e.preventDefault();
+    if (!driveUrl.trim()) {
+      setMessage("❌ Please enter a Google Drive link or direct ZIP URL");
+      return;
+    }
+
+    setUploadingZip(true);
+    setMessage("⏳ Adding Google Drive ZIP file...");
+
+    try {
+      const formattedUrl = formatGoogleDriveUrl(driveUrl.trim());
+      const customTitle = zipTitle.trim() || "Course Material ZIP";
+      const customFileName = customTitle.toLowerCase().endsWith(".zip") ? customTitle : `${customTitle}.zip`;
+      const customSize = driveFileSize.trim() || "Google Drive Cloud";
+
+      const newZipItem = {
+        _id: `zf-gdrive-${Date.now()}`,
+        title: customTitle,
+        url: formattedUrl,
+        fileName: customFileName,
+        fileSize: customSize,
+        isExternal: true,
+        source: "Google Drive",
+      };
+
+      let success = false;
+      try {
+        const res = await fetch(getApiUrl(`/api/courses/${id}/add-drive-zip`), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: formattedUrl,
+            title: customTitle,
+            fileName: customFileName,
+            fileSize: customSize,
+          }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.course) {
+            setCourse(data.course);
+            success = true;
+          }
+        }
+      } catch (err) {
+        console.warn("Direct /add-drive-zip error, using PUT fallback:", err);
+      }
+
+      if (!success) {
+        const currentList = Array.from(zipMap.values()).map((z) => ({
+          title: z.title || z.fileName,
+          url: z.url,
+          fileName: z.fileName,
+          fileSize: z.fileSize,
+        }));
+        const updatedZipFiles = [
+          ...currentList.filter((z) => z.url !== formattedUrl),
+          newZipItem,
+        ];
+        const updateRes = await fetch(getApiUrl(`/api/courses/${id}`), {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            zipFiles: updatedZipFiles,
+            zipFile: newZipItem,
+          }),
+        });
+        if (updateRes.ok) {
+          const updateData = await updateRes.json();
+          if (updateData.course) setCourse(updateData.course);
+        }
+      }
+
+      setDriveUrl("");
+      setZipTitle("");
+      setDriveFileSize("");
+      setMessage(`✅ Google Drive ZIP "${customTitle}" added successfully!`);
+      fetchCourse();
     } catch (error) {
       setMessage(`❌ ${error.message}`);
     } finally {
@@ -1295,10 +1387,15 @@ function AdminCourseContent() {
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <span style={{ fontSize: "26px" }}>📦</span>
                     <div>
-                      <strong style={{ color: "#4ade80", fontSize: "14px", display: "block" }}>
+                      <strong style={{ color: "#4ade80", fontSize: "14px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
                         ZIP {idx + 1}: {z.title || z.fileName}
+                        {(z.isExternal || (z.url && (z.url.includes("drive.google.com") || z.url.includes("google.com")))) && (
+                          <span style={{ background: "rgba(56, 189, 248, 0.2)", color: "#38bdf8", padding: "2px 8px", borderRadius: "6px", fontSize: "11px", fontWeight: "700" }}>
+                            ☁️ Google Drive
+                          </span>
+                        )}
                       </strong>
-                      <small style={{ color: "#9ca3af" }}>
+                      <small style={{ color: "#9ca3af", display: "block", marginTop: "2px" }}>
                         {z.fileName} {z.fileSize ? `• ${z.fileSize}` : ""}
                       </small>
                     </div>
@@ -1306,7 +1403,7 @@ function AdminCourseContent() {
 
                   <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                     <a
-                      href={getAssetUrl(z.url)}
+                      href={getDownloadUrl(z.url, z.fileName)}
                       download={z.fileName || `project-${idx + 1}.zip`}
                       target="_blank"
                       rel="noreferrer"
@@ -1328,48 +1425,147 @@ function AdminCourseContent() {
             </div>
           )}
 
-          {/* UPLOAD NEW / ANOTHER ZIP FORM */}
-          <form onSubmit={handleUploadCourseZip} style={{ borderTop: allZips.length > 0 ? "1px solid rgba(255,255,255,0.08)" : "none", paddingTop: allZips.length > 0 ? "15px" : "0" }}>
-            <h3 style={{ fontSize: "15px", color: "#4ade80", margin: "0 0 10px 0" }}>
-              {allZips.length > 0 ? "➕ Upload Dusri / Next ZIP File:" : "➕ Upload 1st ZIP File:"}
+          {/* ZIP MODE TOGGLE (GOOGLE DRIVE vs LOCAL FILE) */}
+          <div style={{ borderTop: allZips.length > 0 ? "1px solid rgba(255,255,255,0.08)" : "none", paddingTop: allZips.length > 0 ? "15px" : "0", marginBottom: "15px" }}>
+            <h3 style={{ fontSize: "15px", color: "#4ade80", margin: "0 0 12px 0" }}>
+              {allZips.length > 0 ? "➕ Nayi / Next ZIP File Add Karein:" : "➕ 1st ZIP File Add Karein:"}
             </h3>
 
-            <div className="form-group">
-              <label>ZIP Title / Name (Optional)</label>
-              <input
-                type="text"
-                placeholder="e.g. Web Development Part 2 ZIP, or React Source Code"
-                value={zipTitle}
-                onChange={(e) => setZipTitle(e.target.value)}
-              />
+            <div style={{ display: "flex", gap: "10px", marginBottom: "16px" }}>
+              <button
+                type="button"
+                onClick={() => setZipMode("drive")}
+                style={{
+                  flex: 1,
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  border: zipMode === "drive" ? "2px solid #38bdf8" : "1px solid rgba(255,255,255,0.12)",
+                  background: zipMode === "drive" ? "rgba(56, 189, 248, 0.18)" : "rgba(255,255,255,0.04)",
+                  color: zipMode === "drive" ? "#38bdf8" : "rgba(255,255,255,0.7)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                🌐 Google Drive Link (Recommended)
+              </button>
+              <button
+                type="button"
+                onClick={() => setZipMode("file")}
+                style={{
+                  flex: 1,
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  fontWeight: "700",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  border: zipMode === "file" ? "2px solid #4ade80" : "1px solid rgba(255,255,255,0.12)",
+                  background: zipMode === "file" ? "rgba(74, 222, 128, 0.18)" : "rgba(255,255,255,0.04)",
+                  color: zipMode === "file" ? "#4ade80" : "rgba(255,255,255,0.7)",
+                  transition: "all 0.2s ease",
+                }}
+              >
+                💻 Laptop Se File Upload (.zip)
+              </button>
             </div>
+          </div>
 
-            <div className="video-upload-box">
-              <label htmlFor="course-zip-file-input">
-                📁 Select ZIP File (.zip, .rar, .7z)
-              </label>
-              <input
-                id="course-zip-file-input"
-                type="file"
-                accept=".zip,.rar,.7z,.tar,.gz,application/zip,application/x-zip-compressed"
-                onChange={(e) => setZipFile(e.target.files[0] || null)}
-              />
-              {zipFile && (
-                <p className="selected-video">
-                  📦 Selected: {zipFile.name} • {(zipFile.size / (1024 * 1024)).toFixed(2)} MB
-                </p>
-              )}
-            </div>
+          {/* OPTION 1: GOOGLE DRIVE LINK FORM */}
+          {zipMode === "drive" && (
+            <form onSubmit={handleAddDriveZip} style={{ background: "rgba(56, 189, 248, 0.05)", padding: "16px", borderRadius: "12px", border: "1px solid rgba(56, 189, 248, 0.2)" }}>
+              <div style={{ background: "rgba(56, 189, 248, 0.12)", padding: "10px 14px", borderRadius: "8px", marginBottom: "14px", fontSize: "12px", color: "#bae6fd", lineHeight: "1.5" }}>
+                💡 <strong>Google Drive Tip:</strong> Google Drive par ZIP upload karein ➔ Share ➔ <strong>"Anyone with the link"</strong> set karein ➔ Link copy karke yahan paste karein. Yeh link <strong>hamesha permanent</strong> rahega aur server restart hone par bhi kabhi delete nahi hoga!
+              </div>
 
-            <button
-              type="submit"
-              disabled={uploadingZip || !zipFile}
-              className="add-module-btn"
-              style={{ marginTop: "14px" }}
-            >
-              {uploadingZip ? "⏳ Uploading ZIP..." : allZips.length > 0 ? "➕ Upload Dusri ZIP File →" : "⬆ Upload Course ZIP File →"}
-            </button>
-          </form>
+              <div className="form-group">
+                <label>ZIP Title / Name *</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Web Development Full Course Material ZIP, or React Source Code"
+                  value={zipTitle}
+                  onChange={(e) => setZipTitle(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Google Drive Share Link / Direct ZIP URL *</label>
+                <input
+                  type="url"
+                  placeholder="https://drive.google.com/file/d/1AbC...XyZ/view?usp=sharing"
+                  value={driveUrl}
+                  onChange={(e) => setDriveUrl(e.target.value)}
+                  required
+                />
+                {driveUrl && (driveUrl.includes("drive.google.com") || driveUrl.includes("drive.usercontent.google.com")) && (
+                  <p style={{ margin: "6px 0 0 0", fontSize: "12px", color: "#4ade80", fontWeight: "600" }}>
+                    ✅ Google Drive Link Detected! Automatic 1-Click Direct Download will be activated.
+                  </p>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label>File Size Display (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 150 MB, 500 MB, 1.2 GB"
+                  value={driveFileSize}
+                  onChange={(e) => setDriveFileSize(e.target.value)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={uploadingZip || !driveUrl.trim()}
+                className="add-module-btn"
+                style={{ marginTop: "10px", background: "linear-gradient(135deg, #0284c7, #38bdf8)" }}
+              >
+                {uploadingZip ? "⏳ Adding Google Drive ZIP..." : "🚀 Add Google Drive ZIP to Course →"}
+              </button>
+            </form>
+          )}
+
+          {/* OPTION 2: LOCAL FILE UPLOAD FORM */}
+          {zipMode === "file" && (
+            <form onSubmit={handleUploadCourseZip}>
+              <div className="form-group">
+                <label>ZIP Title / Name (Optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Web Development Part 2 ZIP, or React Source Code"
+                  value={zipTitle}
+                  onChange={(e) => setZipTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="video-upload-box">
+                <label htmlFor="course-zip-file-input">
+                  📁 Select ZIP File (.zip, .rar, .7z)
+                </label>
+                <input
+                  id="course-zip-file-input"
+                  type="file"
+                  accept=".zip,.rar,.7z,.tar,.gz,application/zip,application/x-zip-compressed"
+                  onChange={(e) => setZipFile(e.target.files[0] || null)}
+                />
+                {zipFile && (
+                  <p className="selected-video">
+                    📦 Selected: {zipFile.name} • {(zipFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={uploadingZip || !zipFile}
+                className="add-module-btn"
+                style={{ marginTop: "14px" }}
+              >
+                {uploadingZip ? "⏳ Uploading ZIP..." : allZips.length > 0 ? "➕ Upload Dusri ZIP File →" : "⬆ Upload Course ZIP File →"}
+              </button>
+            </form>
+          )}
         </section>
 
         {/* =====================================

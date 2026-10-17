@@ -997,7 +997,11 @@ function CourseDetails() {
                       <div className="materials-details">
                         <h3>{z.title || z.fileName}</h3>
                         <p>{z.fileName}</p>
-                        <span className="materials-badge">{z.fileSize || "ZIP Archive"}</span>
+                        <span className="materials-badge">
+                          {(z.isExternal || (z.url && (z.url.includes("drive.google.com") || z.url.includes("google.com"))))
+                            ? `☁️ Google Drive • ${z.fileSize || "Cloud ZIP"}`
+                            : (z.fileSize || "ZIP Archive")}
+                        </span>
                       </div>
                       <a
                         href={getDownloadUrl(z.url, z.fileName)}

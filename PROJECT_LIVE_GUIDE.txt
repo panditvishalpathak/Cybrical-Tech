@@ -130,6 +130,22 @@ Agar aap chahein ki Frontend Vercel par alag chale aur Backend Render par:
    - Admin Login URL: https://cybrical-tech.onrender.com/admin/login
    - Admin panel se courses create, update, delete aur ZIP files upload ki ja sakti hain.
 
+--------------------------------------------------------------------------------
+7. GOOGLE DRIVE SE ZIP FILES ADD KARNE KA TAREEQA (RECOMMENDED)
+--------------------------------------------------------------------------------
+Render ke free tier par server restart hone par local files delete ho sakti hain.
+Google Drive use karna 100% permanent aur best tareeqa hai (unlimited file size):
+
+1. Apni course ZIP file ko Google Drive par upload karein.
+2. File par Right Click -> Share -> General Access: "Anyone with the link" (Viewer)
+   karke "Copy link" karein.
+3. Admin Portal (https://cybrical-tech.onrender.com/admin/login) me course open karein.
+4. "Course ZIP Files" section me "Google Drive Link" tab choose karein.
+5. ZIP Title aur Google Drive link paste karke "Add Google Drive ZIP" click karein.
+6. System ise direct 1-click download link me convert kar dega.
+   Students ko "☁️ Google Drive" badge ke sath direct download milega!
+
 ================================================================================
                     CYBRICAL TECH - READY & LIVE 🚀
 ================================================================================
+

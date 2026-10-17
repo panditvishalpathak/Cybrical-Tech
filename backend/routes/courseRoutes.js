@@ -810,6 +810,20 @@ router.get("/download-file", (req, res) => {
       return res.status(400).json({ success: false, message: "File URL is required" });
     }
 
+    // Support external cloud links (Google Drive, Dropbox, AWS S3, etc.)
+    if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+      let redirectUrl = rawUrl;
+      if (rawUrl.includes("drive.google.com") || rawUrl.includes("drive.usercontent.google.com")) {
+        const match = rawUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                      rawUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                      rawUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match && match[1]) {
+          redirectUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+        }
+      }
+      return res.redirect(redirectUrl);
+    }
+
     const cleanName = path.basename(rawUrl.split("?")[0]);
     const filePath = path.join(uploadDir, cleanName);
 
@@ -1017,6 +1031,126 @@ router.post("/:courseId/upload-zip", upload.any(), async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// ==========================================
+// 3.5 ADD GOOGLE DRIVE / DIRECT LINK ZIP
+// ==========================================
+
+router.post("/:courseId/add-drive-zip", async (req, res) => {
+  try {
+    const { url, title, fileName, fileSize } = req.body;
+    if (!url || typeof url !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: "Google Drive link ya direct ZIP URL zaroori hai.",
+      });
+    }
+
+    let directUrl = url.trim();
+    if (directUrl.includes("drive.google.com") || directUrl.includes("drive.usercontent.google.com")) {
+      const match = directUrl.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                    directUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+                    directUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        directUrl = `https://drive.google.com/uc?export=download&id=${match[1]}`;
+      }
+    }
+
+    const zipTitle = title?.trim() || "Course Material ZIP";
+    const zipFileName = fileName?.trim() || (zipTitle.toLowerCase().endsWith(".zip") ? zipTitle : `${zipTitle}.zip`);
+    const zipFileSize = fileSize?.trim() || "Google Drive Cloud";
+
+    const newZipObj = {
+      _id: `zf-gdrive-${Date.now()}`,
+      title: zipTitle,
+      url: directUrl,
+      fileName: zipFileName,
+      fileSize: zipFileSize,
+      isExternal: true,
+      source: "Google Drive",
+    };
+
+    let course = null;
+    const targetId = req.params.courseId;
+
+    if (mongoose.Types.ObjectId.isValid(targetId)) {
+      try {
+        course = await Course.findById(targetId);
+      } catch (e) {
+        course = null;
+      }
+    }
+
+    if (!course) {
+      try {
+        course = await Course.findOne({
+          $or: [
+            { slug: targetId },
+            { slug: new RegExp(`^${targetId}$`, "i") },
+          ],
+        });
+      } catch (e) {
+        course = null;
+      }
+    }
+
+    if (course) {
+      course.zipFile = {
+        url: directUrl,
+        fileName: zipFileName,
+        fileSize: zipFileSize,
+      };
+
+      course.zipFiles = course.zipFiles || [];
+      // Remove any existing duplicate with same url
+      course.zipFiles = course.zipFiles.filter((z) => z.url !== directUrl);
+      course.zipFiles.push(newZipObj);
+      course.markModified("zipFiles");
+
+      course.resources = course.resources || [];
+      course.resources = course.resources.filter((r) => r.url !== directUrl && r.fileUrl !== directUrl);
+      course.resources.push({
+        title: zipTitle,
+        url: directUrl,
+        fileUrl: directUrl,
+        fileName: zipFileName,
+        fileSize: zipFileSize,
+      });
+      course.markModified("resources");
+
+      await course.save();
+
+      return res.status(201).json({
+        success: true,
+        message: `Google Drive ZIP "${zipTitle}" successfully added! Total ZIPs: ${course.zipFiles.length}`,
+        course,
+        zipFile: course.zipFile,
+        zipFiles: course.zipFiles,
+      });
+    }
+
+    // Fallback if DB offline or mock course
+    const fallbackCourse = getFallbackCourse(targetId);
+    fallbackCourse.zipFiles = fallbackCourse.zipFiles || [];
+    fallbackCourse.zipFiles = fallbackCourse.zipFiles.filter((z) => z.url !== directUrl);
+    fallbackCourse.zipFiles.push(newZipObj);
+    fallbackCourse.zipFile = newZipObj;
+    saveSingleFallbackCourse(fallbackCourse);
+
+    return res.status(201).json({
+      success: true,
+      message: `Google Drive ZIP "${zipTitle}" successfully added! Total ZIPs: ${fallbackCourse.zipFiles.length}`,
+      course: fallbackCourse,
+      zipFile: newZipObj,
+      zipFiles: fallbackCourse.zipFiles,
+    });
+  } catch (error) {
+    return res.status(500).json({
       success: false,
       message: error.message,
     });

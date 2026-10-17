@@ -125,3 +125,18 @@ Agar aapko Frontend Vercel par alag host karna ho:
 
 3. **Admin Credentials:**  
    Admin Portal login link: `https://cybrical-tech.onrender.com/admin/login`
+
+---
+
+## ☁️ 7. Google Drive Se Course ZIP Files Add Karna (Recommended)
+
+Render ke free tier par server restart hone par local files delete ho sakti hain. Isliye Google Drive use karna **100% permanent aur safe** hai:
+
+1. Apni course ZIP file ko **Google Drive** par upload karein.
+2. File par right-click ➔ **Share** ➔ General Access: **"Anyone with the link" (Viewer)** set karke **Copy link** karein.
+3. [Admin Portal](https://cybrical-tech.onrender.com/admin/login) me course open karein ➔ Section 01 **"Course ZIP Files"** me jayein.
+4. **"🌐 Google Drive Link (Recommended)"** tab select karein.
+5. ZIP Title aur Google Drive share link paste karke **"Add Google Drive ZIP to Course"** par click karein.
+6. System ise direct 1-click download link me automatically convert kar deta hai.
+7. Students ko Course Details page par **"☁️ Google Drive"** badge ke sath instant high-speed download milega!
+
